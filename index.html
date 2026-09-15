@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nouns Eye Playground — Gami</title>
+<style>
+  :root {
+    --bg: #d5d7e1;
+    --ink: #1a1a1a;
+    --muted: #5c5c5c;
+    --card: #ffffff;
+    --accent: #5648ed;
+    --border: #1a1a1a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100%;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: repeating-linear-gradient(-45deg, #f0f0f0, #f0f0f0 12px, #e8e8e8 12px, #e8e8e8 24px);
+    color: var(--ink);
+  }
+  h1, .tab, .btn, .brand { font-family: "Londrina Solid", "Arial Black", Impact, sans-serif; letter-spacing: 0.02em; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .brand { font-size: 2rem; line-height: 1; display: flex; align-items: center; gap: 12px; }
+  .brand .dot { width: 28px; height: 28px; background: linear-gradient(90deg, #fff 50%, #000 50%); border: 3px solid #000; }
+  .sub { color: var(--muted); font-size: 0.95rem; margin-top: 4px; }
+  .layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } }
+  .preview-card, .traits-card { background: var(--card); border: 3px solid var(--border); box-shadow: 6px 6px 0 #000; border-radius: 12px; overflow: hidden; }
+  .preview-card { padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; position: sticky; top: 16px; }
+  #preview { width: 100%; max-width: 320px; aspect-ratio: 1; border: 3px solid #000; border-radius: 8px; overflow: hidden; background: #d5d7e1; image-rendering: pixelated; }
+  #preview svg { width: 100%; height: 100%; display: block; }
+  .actions { display: flex; gap: 10px; width: 100%; flex-wrap: wrap; }
+  .btn { flex: 1; min-width: 120px; padding: 12px 16px; font-size: 1.15rem; border: 3px solid #000; border-radius: 8px; background: #fff; cursor: pointer; box-shadow: 3px 3px 0 #000; font-family: "Londrina Solid", "Arial Black", Impact, sans-serif; }
+  .btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000; }
+  .btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.secondary { background: #ffc110; }
+  .seed { font-size: 0.8rem; color: var(--muted); word-break: break-all; text-align: center; width: 100%; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 3px solid #000; background: #f7f7f7; }
+  .tab { flex: 1; min-width: 80px; padding: 12px 8px; font-size: 1.05rem; border: none; border-right: 2px solid #000; background: transparent; cursor: pointer; color: var(--muted); font-family: "Londrina Solid", Impact, sans-serif; }
+  .tab:last-child { border-right: none; }
+  .tab.active { background: #fff; color: #000; box-shadow: inset 0 -3px 0 var(--accent); }
+  .panel { padding: 16px; max-height: 560px; overflow-y: auto; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 10px; }
+  .thumb { border: 3px solid #000; border-radius: 8px; padding: 4px; background: #fff; cursor: pointer; position: relative; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+  .thumb.selected { outline: 3px solid var(--accent); outline-offset: 1px; background: #eeecff; }
+  .thumb .label { position: absolute; bottom: 2px; right: 4px; font-size: 0.65rem; background: rgba(255,255,255,0.85); padding: 0 3px; border-radius: 3px; }
+  .swatch { width: 100%; height: 100%; border-radius: 4px; }
+  .count { padding: 8px 16px 0; font-size: 0.85rem; color: var(--muted); }
+  footer { margin-top: 28px; text-align: center; color: var(--muted); font-size: 0.85rem; }
+  footer a { color: var(--accent); }
+  #loading { padding: 2rem; text-align: center; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand"><span class="dot" aria-hidden="true"></span> Nouns Eye Playground</div>
+      <div class="sub">Built for Gami · Official Nouns traits + custom BW eyes</div>
+    </div>
+  </header>
+  <div id="loading">Loading traits…</div>
+  <div class="layout" id="app" style="display:none">
+    <div class="preview-card">
+      <div id="preview"></div>
+      <div class="actions">
+        <button class="btn primary" id="btnRandom" type="button">Randomize</button>
+        <button class="btn secondary" id="btnDownload" type="button">Download PNG</button>
+      </div>
+      <div class="seed" id="seedLabel"></div>
+    </div>
+    <div class="traits-card">
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-cat="background" type="button">Background</button>
+        <button class="tab" data-cat="body" type="button">Body</button>
+        <button class="tab" data-cat="accessory" type="button">Accessory</button>
+        <button class="tab" data-cat="head" type="button">Head</button>
+        <button class="tab" data-cat="glasses" type="button">Glasses</button>
+      </div>
+      <div class="count" id="countLabel"></div>
+      <div class="panel"><div class="grid" id="traitGrid"></div></div>
+    </div>
+  </div>
+  <footer>Traits from <a href="https://nouns.wtf" target="_blank" rel="noopener">Nouns</a> (@nouns/assets) · Eyes only (no frames)</footer>
+</div>
+<script>
+let ImageData = null;
+function getRectLength(currentX, rectLength, rightBound) {
+  const remaining = rightBound - currentX;
+  return rectLength <= remaining ? rectLength : remaining;
+}
+function decodeImage(image) {
+  const data = image.replace(/^0x/, '');
+  const bounds = {
+    top: parseInt(data.substring(2, 4), 16),
+    right: parseInt(data.substring(4, 6), 16),
+    bottom: parseInt(data.substring(6, 8), 16),
+    left: parseInt(data.substring(8, 10), 16),
+  };
+  const rects = (data.substring(10).match(/.{1,4}/g) || []).map((t) => [
+    parseInt(t.substring(0, 2), 16),
+    parseInt(t.substring(2, 4), 16),
+  ]);
+  return { bounds, rects };
+}
+function buildSVG(parts, paletteColors, bgColor) {
+  const svgWithoutEnd = parts.reduce((svg, part) => {
+    const rects = [];
+    const { bounds, rects: partRects } = decodeImage(part.data);
+    let currentX = bounds.left;
+    let currentY = bounds.top;
+    partRects.forEach((rect) => {
+      let drawLength = rect[0];
+      const colorIndex = rect[1];
+      const hexColor = paletteColors[colorIndex];
+      let length = getRectLength(currentX, drawLength, bounds.right);
+      while (length > 0) {
+        if (colorIndex !== 0) {
+          rects.push(`<rect width="${length * 10}" height="10" x="${currentX * 10}" y="${currentY * 10}" fill="#${hexColor}" />`);
+        }
+        currentX += length;
+        if (currentX === bounds.right) { currentX = bounds.left; currentY++; }
+        drawLength -= length;
+        length = getRectLength(currentX, drawLength, bounds.right);
+      }
+    });
+    return svg + rects.join('');
+  }, `<svg width="320" height="320" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="${bgColor ? `#${bgColor}` : 'none'}" />`);
+  return svgWithoutEnd + '</svg>';
+}
+const state = { background: 0, body: 0, accessory: 0, head: 0, glasses: 0, category: 'background' };
+const cats = {
+  background: { list: () => ImageData.bgcolors.map((c, i) => ({ filename: 'bg-' + i, color: c, index: i })), isBg: true },
+  body: { list: () => ImageData.images.bodies },
+  accessory: { list: () => ImageData.images.accessories },
+  head: { list: () => ImageData.images.heads },
+  glasses: { list: () => ImageData.images.glasses },
+};
+function currentParts() {
+  return [
+    ImageData.images.bodies[state.body],
+    ImageData.images.accessories[state.accessory],
+    ImageData.images.heads[state.head],
+    ImageData.images.glasses[state.glasses],
+  ];
+}
+function renderPreview() {
+  const bg = ImageData.bgcolors[state.background];
+  document.getElementById('preview').innerHTML = buildSVG(currentParts(), ImageData.palette, bg);
+  document.getElementById('seedLabel').textContent =
+    `bg ${state.background} · body ${state.body} · accessory ${state.accessory} · head ${state.head} · glasses ${state.glasses}`;
+}
+function renderGrid() {
+  const grid = document.getElementById('traitGrid');
+  const cat = state.category;
+  const items = cats[cat].list();
+  document.getElementById('countLabel').textContent = items.length + ' option' + (items.length === 1 ? '' : 's');
+  grid.innerHTML = '';
+  items.forEach((item, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'thumb' + (state[cat] === i ? ' selected' : '');
+    btn.title = (item.filename || '').replace(/^(body|accessory|head|glasses)-/, '').replace(/-/g, ' ') || ('#' + i);
+    if (cats[cat].isBg) {
+      const sw = document.createElement('div');
+      sw.className = 'swatch';
+      sw.style.background = '#' + item.color;
+      btn.appendChild(sw);
+    } else {
+      const wrap = document.createElement('div');
+      wrap.style.width = '100%';
+      wrap.style.height = '100%';
+      wrap.innerHTML = buildSVG([item], ImageData.palette, cat === 'glasses' ? 'd5d7e1' : 'f5f5f5');
+      const svg = wrap.querySelector('svg');
+      if (svg) { svg.setAttribute('width', '100%'); svg.setAttribute('height', '100%'); }
+      btn.appendChild(wrap);
+    }
+    const label = document.createElement('span');
+    label.className = 'label';
+    label.textContent = String(i);
+    btn.appendChild(label);
+    btn.addEventListener('click', () => { state[cat] = i; renderPreview(); renderGrid(); });
+    grid.appendChild(btn);
+  });
+}
+function randomize() {
+  state.background = Math.floor(Math.random() * ImageData.bgcolors.length);
+  state.body = Math.floor(Math.random() * ImageData.images.bodies.length);
+  state.accessory = Math.floor(Math.random() * ImageData.images.accessories.length);
+  state.head = Math.floor(Math.random() * ImageData.images.heads.length);
+  state.glasses = 0;
+  renderPreview();
+  renderGrid();
+}
+function downloadPNG() {
+  const svg = document.getElementById('preview').innerHTML;
+  const img = new Image();
+  const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 640; canvas.height = 640;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, 640, 640);
+    URL.revokeObjectURL(url);
+    canvas.toBlob((b) => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = `noun-eyes-${state.background}-${state.body}-${state.accessory}-${state.head}.png`;
+      a.click();
+    }, 'image/png');
+  };
+  img.src = url;
+}
+document.querySelectorAll('.tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.category = tab.dataset.cat;
+    renderGrid();
+  });
+});
+document.getElementById('btnRandom').addEventListener('click', randomize);
+document.getElementById('btnDownload').addEventListener('click', downloadPNG);
+fetch('./image-data.json').then(r => r.json()).then((data) => {
+  ImageData = data;
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'grid';
+  randomize();
+}).catch((e) => {
+  document.getElementById('loading').textContent = 'Failed to load traits: ' + e;
+});
+</script>
+</body>
+</html>
